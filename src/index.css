@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-fire: #ff8c1a;
+  --color-fire-light: #ffa64d;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: #1c1714;
+}

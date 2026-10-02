@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: bonfireLAN ${{ github.ref_name }}
+          releaseBody: |
+            **Playing:** grab `bonfireLAN_*_x64-setup.exe` and install it, or `bonfireLAN-portable.exe` if you'd rather not install anything.
+
+            **Hosting a modded server:** you also want `bonfirelan-server.ps1`, check the README.
+          releaseDraft: false
+
+      - name: Upload portable exe and host script
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          Copy-Item src-tauri/target/release/bonfirelan.exe bonfireLAN-portable.exe
+          gh release upload ${{ github.ref_name }} bonfireLAN-portable.exe server-tools/bonfirelan-server.ps1 --clobber
